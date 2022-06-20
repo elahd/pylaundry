@@ -12,12 +12,13 @@ import uuid
 
 import aiohttp
 
-from .const import API_ENDPOINT_URL, RESULT_TEXT_KEY
+from .const import API_ENDPOINT_URL
 from .const import APPKEY
 from .const import AUTH_TOKEN_KEY
 from .const import EMPTY_AUTH_TOKEN
 from .const import REFRESH_REQUEST_PREHASH_SUFFIX
 from .const import RESULT_CODE_KEY
+from .const import RESULT_TEXT_KEY
 from .const import ServerResponseCodes
 from .exceptions import AuthenticationError
 from .exceptions import CommunicationError
