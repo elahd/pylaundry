@@ -304,6 +304,9 @@ class Laundry:
             self._auth_token = EMPTY_AUTH_TOKEN
 
             try:
+                if not self._username or not self._password:
+                    raise AuthenticationError
+
                 await self.async_login(username=self._username, password=self._password)
             except Exception as err:
                 raise Rejected("Request failed even after re-trying login.") from err
