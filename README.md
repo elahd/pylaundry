@@ -6,7 +6,7 @@
 
 # Purpose
 
-pylaundry is a python library for querying machine status and virtual card balances for laundry room facilities that use ESD's [CyclePay](https://esdcard.com/cyclepay/) platform. If your building's laundry room supports one of the below apps, you should be able to use this library:
+pylaundry allows developers to make the ESD CyclePay system interoperable with custom scripts and third party systems like Home Assistant. The library supports querying machine status and virtual card balances. If your building's laundry room supports one of the below apps, you should be able to use pylibrary:
 
 | Logo                                                                                                                           | Name              | Links                                                                                                                                                                    |
 | ------------------------------------------------------------------------------------------------------------------------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
