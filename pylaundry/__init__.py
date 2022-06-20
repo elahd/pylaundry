@@ -28,7 +28,7 @@ from .exceptions import ResponseFormatError
 from .exceptions import UnexpectedError
 from .helpers import MessagePacker
 
-__version__ = "v0.1"
+__version__ = "v0.1.1"
 
 log = logging.getLogger(__name__)
 
