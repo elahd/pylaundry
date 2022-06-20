@@ -23,3 +23,7 @@ class UnexpectedError(Exception):
 
 class NotLoggedIn(Exception):
     """User attempted to perform an action before logging in."""
+
+
+class AuthenticationError(Exception):
+    """User submitted invalid credentials."""

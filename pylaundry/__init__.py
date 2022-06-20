@@ -8,18 +8,18 @@ from enum import Enum
 import hashlib
 import json
 import logging
-from multiprocessing import AuthenticationError
 import uuid
 
 import aiohttp
 
-from .const import API_ENDPOINT_URL
+from .const import API_ENDPOINT_URL, RESULT_TEXT_KEY
 from .const import APPKEY
 from .const import AUTH_TOKEN_KEY
 from .const import EMPTY_AUTH_TOKEN
 from .const import REFRESH_REQUEST_PREHASH_SUFFIX
 from .const import RESULT_CODE_KEY
 from .const import ServerResponseCodes
+from .exceptions import AuthenticationError
 from .exceptions import CommunicationError
 from .exceptions import NotLoggedIn
 from .exceptions import Rejected
@@ -27,7 +27,7 @@ from .exceptions import ResponseFormatError
 from .exceptions import UnexpectedError
 from .helpers import MessagePacker
 
-__version__ = "v0.1-beta"
+__version__ = "v0.1"
 
 log = logging.getLogger(__name__)
 
@@ -44,7 +44,7 @@ class MachineType(Enum):
 class LaundryMachine:
     """Representation of a washer or dryer."""
 
-    id: str
+    id_: str
     type: MachineType
     number: str
     busy: bool | None
@@ -60,6 +60,7 @@ class LaundryProfile:
     location_address: str
     card_balance: float
     user_id: str
+    location_id: str
 
 
 class Laundry:
@@ -76,10 +77,17 @@ class Laundry:
         self._first_request_id: str | None = None
         self._auth_token: str = EMPTY_AUTH_TOKEN
 
+        self._username: str | None = None
+        self._password: str | None = None
+
         self.installation_token = str(uuid.uuid4())
 
     async def async_login(self, username: str, password: str) -> None:
         """Log in to Laundry Link."""
+
+        # We need to store these for error recovery in _send_request().
+        self._username = username
+        self._password = password
 
         try:
             request_data = [
@@ -112,6 +120,7 @@ class Laundry:
             .get("CardInformation", {})
             .get("Balance"),
             user_id=response["UserID"],
+            location_id=response["LocationID"],
         )
 
     async def async_get_encryption_keys(self) -> None:
@@ -182,14 +191,14 @@ class Laundry:
                     machine_type = MachineType.WASHER
 
                 machines[machine_id] = LaundryMachine(
-                    id=machine["ReaderID"],
+                    id_=machine["ReaderID"],
                     type=machine_type,
                     number=machine["Label"],
                     busy=machine.get("IsBusy"),
                     minutes_remaining=machine.get("MinutesRemaining"),
                     base_price=machine.get("BasePrice"),
                     online=bool(is_online)
-                    if (is_online := machine.get("IsOnline")) in ["true", "false"]
+                    if (is_online := machine.get("IsOnline")) in [True, False]
                     else None,
                 )
 
@@ -198,7 +207,7 @@ class Laundry:
 
         self.machines = machines
 
-    async def _send_request(self, request_json: str) -> dict:
+    async def _send_request(self, request_json: str, no_retry: bool = False) -> dict:
         """Send submitted request body to server. Handles body formatting and headers and updates session objects."""
 
         request_id, packed_request_data = MessagePacker.pack_client_request(
@@ -277,18 +286,38 @@ class Laundry:
 
         # Check response code (in body).
 
-        if not response_code or (
-            response_code := unpacked_content.get(RESULT_CODE_KEY)
-        ) in [
-            ServerResponseCodes.INPUT_MALFORMED,
-            ServerResponseCodes.INVALID_REQUEST,
-        ]:
+        if (
+            not response_code
+            or (
+                (response_code := unpacked_content.get(RESULT_CODE_KEY))
+                == ServerResponseCodes.INVALID_REQUEST
+            )
+            or (response_code == ServerResponseCodes.INPUT_MALFORMED and no_retry)
+        ):
             raise Rejected
+
+        if response_code == ServerResponseCodes.INPUT_MALFORMED:
+            # This error may occur if the server doesn't like the submitted first_request_id. We should retry once after clearing tokens and logging back in.
+
+            self._first_request_id = None
+            self._auth_token = EMPTY_AUTH_TOKEN
+
+            try:
+                await self.async_login(username=self._username, password=self._password)
+            except Exception as err:
+                raise Rejected("Request failed even after re-trying login.") from err
+
+            await self._send_request(request_json=request_json, no_retry=True)
 
         if response_code == ServerResponseCodes.INVALID_CREDENTIALS:
             raise AuthenticationError
 
         if response_code != ServerResponseCodes.SUCCESS:
+            log.error(
+                "Got unexpected response code %s (%s).",
+                response_code,
+                unpacked_content.get(RESULT_TEXT_KEY),
+            )
             raise UnexpectedError
 
         log.debug("EXTRACTED RESPONSE CONTENT:\n%s\n\n", unpacked_content)
