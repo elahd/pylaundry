@@ -37,3 +37,5 @@ AES_IV = bytearray(
 AES_SUFFIX_PREAUTH = (  # Appended to random request UUID before further processing into AES key. Used for authentication requests only.
     "R&%76mhK"
 )
+
+LOG_LEVEL_TRACE = 5

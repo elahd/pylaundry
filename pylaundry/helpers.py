@@ -15,6 +15,7 @@ from cryptography.hazmat.primitives.ciphers import modes
 
 from .const import AES_IV
 from .const import AES_SUFFIX_PREAUTH
+from .const import LOG_LEVEL_TRACE
 from .exceptions import MessagePackerError
 
 log = logging.getLogger(__name__)
@@ -31,24 +32,34 @@ class MessagePacker:
         #     1. Base64 decode.
         #     2. gzip decompress.
 
-        log.debug("==============[ UNPACKING RESPONSE BEGIN ]==============")
+        log.log(
+            LOG_LEVEL_TRACE, "==============[ UNPACKING RESPONSE BEGIN ]=============="
+        )
 
         decoded_as_bytes = base64.standard_b64decode(response_body)
 
-        log.debug("Base64Decode Bytes -> Bytes:\n%s\n\n", decoded_as_bytes.hex())
+        log.log(
+            LOG_LEVEL_TRACE,
+            "Base64Decode Bytes -> Bytes:\n%s\n\n",
+            decoded_as_bytes.hex(),
+        )
 
         gunzipped_as_bytes = gzip.decompress(decoded_as_bytes)
 
-        log.debug("gunzip Bytes -> Bytes:\n%s\n\n", decoded_as_bytes.hex())
+        log.log(
+            LOG_LEVEL_TRACE, "gunzip Bytes -> Bytes:\n%s\n\n", decoded_as_bytes.hex()
+        )
 
         try:
             json_response = json.loads(str(gunzipped_as_bytes, "utf-8"))
         except ValueError as err:
             raise err
 
-        log.debug("UNPACKED RESPONSE:\n%s\n\n", json_response)
+        log.log(LOG_LEVEL_TRACE, "UNPACKED RESPONSE:\n%s\n\n", json_response)
 
-        log.debug("==============[ UNPACKING RESPONSE END ]==============")
+        log.log(
+            LOG_LEVEL_TRACE, "==============[ UNPACKING RESPONSE END ]=============="
+        )
 
         return json_response if isinstance(json_response, dict) else None
 
@@ -71,14 +82,16 @@ class MessagePacker:
         #     4. Base64 encode, again.
         #     5. URL encode.
 
-        log.debug("==============[ PACKING REQUEST BEGIN ]==============")
+        log.log(
+            LOG_LEVEL_TRACE, "==============[ PACKING REQUEST BEGIN ]=============="
+        )
 
-        log.debug("Original Request Body:\n%s\n\n", request_body)
+        log.log(LOG_LEVEL_TRACE, "Original Request Body:\n%s\n\n", request_body)
 
         if not new_request_id:
             new_request_id = str(uuid.uuid4())
 
-        log.debug("New Request ID: %s", new_request_id)
+        log.log(LOG_LEVEL_TRACE, "New Request ID: %s", new_request_id)
 
         key = MessagePacker._generate_aes_key(
             new_request_id=new_request_id, first_request_id=first_request_id
@@ -87,7 +100,7 @@ class MessagePacker:
         # PKCS#7 Pad
         padded_request = MessagePacker._pkcs7_pad(bytes(str(request_body), "utf-8"))
 
-        log.debug("Padded Request:\n%s\n\n", padded_request)
+        log.log(LOG_LEVEL_TRACE, "Padded Request:\n%s\n\n", padded_request)
 
         # AES Encrypt
         cipher = Cipher(algorithms.AES(key), modes.CBC(AES_IV))
@@ -96,7 +109,8 @@ class MessagePacker:
             encryptor.update(bytes(padded_request)) + encryptor.finalize()
         )
 
-        log.debug(
+        log.log(
+            LOG_LEVEL_TRACE,
             "Encrypted Request:\n%s\n\n",
             MessagePacker._format_hex(encrypted_request),
         )
@@ -106,14 +120,14 @@ class MessagePacker:
             base64.b64encode(encrypted_request)
         )
 
-        log.debug("Base64 Encoded Request:\n%s\n\n", b64_encoded_request)
+        log.log(LOG_LEVEL_TRACE, "Base64 Encoded Request:\n%s\n\n", b64_encoded_request)
 
         # URL Encode
         url_encoded_request = urllib.parse.quote(b64_encoded_request)
 
-        log.debug("URL Encoded Request:\n%s\n\n", url_encoded_request)
+        log.log(LOG_LEVEL_TRACE, "URL Encoded Request:\n%s\n\n", url_encoded_request)
 
-        log.debug("==============[ PACKING REQUEST END ]==============")
+        log.log(LOG_LEVEL_TRACE, "==============[ PACKING REQUEST END ]==============")
 
         return (str(new_request_id), url_encoded_request)
 
@@ -134,19 +148,23 @@ class MessagePacker:
         # URL Decode
         url_decoded_request = urllib.parse.unquote(request_body)
 
-        log.debug(
-            "[unpack_client_request] URL Decoded Request:\n%s\n\n", url_decoded_request
+        log.log(
+            LOG_LEVEL_TRACE,
+            "[unpack_client_request] URL Decoded Request:\n%s\n\n",
+            url_decoded_request,
         )
 
         # 2x Base 64 Decode
         b64_decoded_request = base64.b64decode(base64.b64decode(url_decoded_request))
 
-        log.debug(
+        log.log(
+            LOG_LEVEL_TRACE,
             "[unpack_client_request] First Base64 Decoded Request:\n%s\n\n",
             base64.b64decode(url_decoded_request),
         )
 
-        log.debug(
+        log.log(
+            LOG_LEVEL_TRACE,
             "[unpack_client_request] Second Base64 Decoded Request:\n%s\n\n",
             MessagePacker._format_hex(b64_decoded_request),
         )
@@ -156,7 +174,8 @@ class MessagePacker:
         decryptor = cipher.decryptor()
         decrypted_request = decryptor.update(b64_decoded_request) + decryptor.finalize()
 
-        log.debug(
+        log.log(
+            LOG_LEVEL_TRACE,
             "[unpack_client_request] Decrypted Request:\n%s\n\n",
             decrypted_request.hex(),
         )
@@ -167,7 +186,11 @@ class MessagePacker:
         except UnicodeDecodeError as err:
             raise MessagePackerError("Error unpadding message.") from err
 
-        log.debug("[unpack_client_request] Unpadded Request:\n%s\n\n", unpadded_request)
+        log.log(
+            LOG_LEVEL_TRACE,
+            "[unpack_client_request] Unpadded Request:\n%s\n\n",
+            unpadded_request,
+        )
 
         return str(unpadded_request, "utf-8")
 
@@ -212,8 +235,11 @@ class MessagePacker:
 
             key_bytes = bytes(key_str, "utf-8")
 
-        log.debug(
-            "Encryption Key: %s (%s)", key_str, MessagePacker._format_hex(key_bytes)
+        log.log(
+            LOG_LEVEL_TRACE,
+            "Encryption Key: %s (%s)",
+            key_str,
+            MessagePacker._format_hex(key_bytes),
         )
 
         return key_bytes

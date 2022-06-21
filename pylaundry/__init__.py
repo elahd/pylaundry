@@ -16,6 +16,7 @@ from .const import API_ENDPOINT_URL
 from .const import APPKEY
 from .const import AUTH_TOKEN_KEY
 from .const import EMPTY_AUTH_TOKEN
+from .const import LOG_LEVEL_TRACE
 from .const import REFRESH_REQUEST_PREHASH_SUFFIX
 from .const import RESULT_CODE_KEY
 from .const import RESULT_TEXT_KEY
@@ -28,7 +29,7 @@ from .exceptions import ResponseFormatError
 from .exceptions import UnexpectedError
 from .helpers import MessagePacker
 
-__version__ = "v0.1.1"
+__version__ = "v0.1.2"
 
 log = logging.getLogger(__name__)
 
@@ -149,13 +150,13 @@ class Laundry:
 
         secret_raw = f"{self.profile.user_id}{REFRESH_REQUEST_PREHASH_SUFFIX}"
 
-        log.debug("Secret Raw:\n%s\n\n", secret_raw)
+        log.log(LOG_LEVEL_TRACE, "Secret Raw:\n%s\n\n", secret_raw)
 
         hash_result = hashlib.md5(bytes(secret_raw, "utf-8"))  # nosec
 
         secret_hash = hash_result.hexdigest()
 
-        log.debug("Secret Hash:\n%s\n\n", secret_hash)
+        log.log(LOG_LEVEL_TRACE, "Secret Hash:\n%s\n\n", secret_hash)
 
         request_data = ["ConsolidatedRefresh", secret_hash, self.profile.user_id]
 
@@ -225,16 +226,18 @@ class Laundry:
             "Content-Type": "application/x-www-form-urlencoded",
         }
 
-        log.debug("==============[ BUILDING REQUEST BEGIN ]==============")
-        log.debug("** REQUEST HEADERS **")
-        log.debug(request_headers)
+        log.log(
+            LOG_LEVEL_TRACE, "==============[ BUILDING REQUEST BEGIN ]=============="
+        )
+        log.log(LOG_LEVEL_TRACE, "** REQUEST HEADERS **")
+        log.log(LOG_LEVEL_TRACE, request_headers)
 
         request_body = f"CP_REQ_DATA={packed_request_data}"
 
-        log.debug("** REQUEST BODY **")
-        log.debug(request_body)
+        log.log(LOG_LEVEL_TRACE, "** REQUEST BODY **")
+        log.log(LOG_LEVEL_TRACE, request_body)
 
-        log.debug("==============[ BUILDING REQUEST END ]==============")
+        log.log(LOG_LEVEL_TRACE, "==============[ BUILDING REQUEST END ]==============")
 
         try:
             async with self._websession.post(
@@ -252,7 +255,7 @@ class Laundry:
 
             raise CommunicationError from err
 
-        log.debug("RAW SERVER RESPONSE:\n%s\n\n", raw_response)
+        log.log(LOG_LEVEL_TRACE, "RAW SERVER RESPONSE:\n%s\n\n", raw_response)
 
         #
         # Validate response format.
@@ -281,7 +284,7 @@ class Laundry:
         if not unpacked_content:
             raise UnexpectedError("Missing unpacked content.")
 
-        log.debug("UNPACKED RESPONSE CONTENT:\n%s\n\n", unpacked_content)
+        log.log(LOG_LEVEL_TRACE, "UNPACKED RESPONSE CONTENT:\n%s\n\n", unpacked_content)
 
         response_code = unpacked_content.get(RESULT_CODE_KEY)
 
@@ -295,6 +298,7 @@ class Laundry:
             )
             or (response_code == ServerResponseCodes.INPUT_MALFORMED and no_retry)
         ):
+            log.debug("UNPACKED RESPONSE CONTENT:\n%s\n\n", unpacked_content)
             raise Rejected
 
         if response_code == ServerResponseCodes.INPUT_MALFORMED:
@@ -311,7 +315,7 @@ class Laundry:
             except Exception as err:
                 raise Rejected("Request failed even after re-trying login.") from err
 
-            await self._send_request(request_json=request_json, no_retry=True)
+            return await self._send_request(request_json=request_json, no_retry=True)
 
         if response_code == ServerResponseCodes.INVALID_CREDENTIALS:
             raise AuthenticationError
@@ -324,6 +328,8 @@ class Laundry:
             )
             raise UnexpectedError
 
-        log.debug("EXTRACTED RESPONSE CONTENT:\n%s\n\n", unpacked_content)
+        log.log(
+            LOG_LEVEL_TRACE, "EXTRACTED RESPONSE CONTENT:\n%s\n\n", unpacked_content
+        )
 
         return unpacked_content
