@@ -12,6 +12,12 @@
       "type": "shell",
       "command": "pre-commit run mypy --all-files",
       "problemMatcher": []
+    },
+    {
+      "label": "Run tests w/ coverage report.",
+      "type": "shell",
+      "command": "coverage run --source pylaundry -m pytest --verbose && coverage report --show-missing",
+      "problemMatcher": []
     }
   ]
 }
