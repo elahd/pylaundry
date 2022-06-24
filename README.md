@@ -52,4 +52,4 @@ To start a 60 minute dryer cycle, ESD customers need to dip their cards 6 times.
 
 ### ESD's Software Sucks
 
-![ezgif com-gif-maker (1)](https://user-images.githubusercontent.com/466460/175664339-20e89114-fe58-4ae4-9261-4e5a8ea9b9c1.gif)
+![ezgif com-gif-maker (3)](https://user-images.githubusercontent.com/466460/175664816-ade25bef-5671-4ae3-bc25-afcff224a38c.gif)
