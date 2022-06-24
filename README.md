@@ -7,6 +7,8 @@
 
 # Purpose
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/8f9057f1aa294236bb4dcaeb63e881c6)](https://app.codacy.com/gh/elahd/pylaundry?utm_source=github.com&utm_medium=referral&utm_content=elahd/pylaundry&utm_campaign=Badge_Grade_Settings)
+
 pylaundry allows developers to make the ESD CyclePay system interoperable with custom scripts and third party systems like Home Assistant. The library supports querying machine status and virtual card balances. If your building's laundry room supports one of the below apps, you should be able to use pylibrary:
 
 | Logo                                                                                                                           | Name              | Links                                                                                                                                                                    |
