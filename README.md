@@ -49,3 +49,7 @@ Aside from being painfully slow, most re-dips result in a read error:
 ![ezgif com-gif-maker](https://user-images.githubusercontent.com/466460/174495294-14709554-cb30-4949-8f1a-650dc18784b9.gif)
 
 To start a 60 minute dryer cycle, ESD customers need to dip their cards 6 times. This means that ESD chip cards and chip card readers wear out at 6x the speed of other equipment. This is purely anecdotal, but I've had to replace the laundry card in my current building 4 times in 3 years due to wear.
+
+### ESD's Software Sucks
+
+![ezgif com-gif-maker (1)](https://user-images.githubusercontent.com/466460/175664339-20e89114-fe58-4ae4-9261-4e5a8ea9b9c1.gif)
