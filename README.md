@@ -2,7 +2,11 @@
 <img src="https://user-images.githubusercontent.com/466460/174422077-452bdd5c-243b-4487-8bd8-07a0120284d2.png">
 <h2>Python Interface for ESD / Hercules CyclePay Laundry Payment Systems</h2>
 <p align="center">This is an unofficial project that is not affiliated with ESD or Hercules.</p>
-<p align="center"><a href="https://www.codacy.com/gh/elahd/pylaundry/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=elahd/pylaundry&amp;utm_campaign=Badge_Grade"><img src="https://app.codacy.com/project/badge/Grade/73d1f839d824412591ae91fbd9416de7"/></a><img alt="PyPI" src="https://img.shields.io/pypi/v/pylaundry"></p>
+<p align="center">
+  <a href="https://www.codacy.com/gh/elahd/pylaundry/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=elahd/pylaundry&amp;utm_campaign=Badge_Grade"><img src="https://app.codacy.com/project/badge/Grade/73d1f839d824412591ae91fbd9416de7"/></a>
+  <img alt="PyPI" src="https://img.shields.io/pypi/v/pylaundry">
+  <a href="https://codecov.io/gh/elahd/pylaundry"><img scr="https://codecov.io/gh/elahd/pylaundry/branch/main/graph/badge.svg?token=RG41QGHNUV"/></a>
+</p>
 </div>
 
 # Purpose
