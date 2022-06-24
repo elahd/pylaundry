@@ -17,9 +17,8 @@ jobs:
           pip install pytest-cov
           pip install -r requirements-dev.txt
           pytest --cov=./ --cov-report=xml
-      - uses: actions/checkout@v2
       - name: Run codacy-coverage-reporter
         uses: codacy/codacy-coverage-reporter-action@v1
         with:
           api-token: ${{ secrets.CODACY_API_TOKEN }}
-          coverage-reports: coverage.xml
+          coverage-reports: ./coverage.xml
