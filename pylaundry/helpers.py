@@ -201,7 +201,7 @@ class MessagePacker:
         """Generate AES encryption key."""
 
         key_str = ""
-        key_bytes = bytes()
+        key_bytes = b""
 
         if not first_request_id:
 
