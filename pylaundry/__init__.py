@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
 import hashlib
 import json
@@ -23,10 +24,13 @@ from .const import RESULT_TEXT_KEY
 from .const import ServerResponseCodes
 from .exceptions import AuthenticationError
 from .exceptions import CommunicationError
+from .exceptions import MachineNotFound
 from .exceptions import NotLoggedIn
 from .exceptions import Rejected
 from .exceptions import ResponseFormatError
 from .exceptions import UnexpectedError
+from .exceptions import VendFailure
+from .exceptions import VendLogFailure
 from .helpers import MessagePacker
 
 __version__ = "v0.1.2"
@@ -52,7 +56,9 @@ class LaundryMachine:
     busy: bool | None
     minutes_remaining: int | None
     base_price: float | None
+    topoff_price: float | None
     online: bool | None
+    reader_serial: str | None
 
 
 @dataclass
@@ -62,7 +68,10 @@ class LaundryProfile:
     location_address: str
     card_balance: float
     user_id: str
+    user_token: str
     location_id: str
+    database_id: str | None
+    card_serial: str | None
 
 
 class Laundry:
@@ -116,13 +125,30 @@ class Laundry:
             response.get("Bundle", {}).get("MachinesInformation", {})
         )
 
+        # Assemble user token
+        user_token_raw = (
+            f"{(user_id := response['UserID'])}{REFRESH_REQUEST_PREHASH_SUFFIX}"
+        )
+
+        log.log(LOG_LEVEL_TRACE, "Secret Raw:\n%s\n\n", user_token_raw)
+
+        userhash_md5 = hashlib.md5(bytes(user_token_raw, "utf-8"))  # nosec
+
+        user_token = userhash_md5.hexdigest()
+
+        # Assemble profile
         self.profile = LaundryProfile(
             location_address=response["LocationAddress"],
             card_balance=response.get("Bundle", {})
             .get("CardInformation", {})
             .get("Balance"),
-            user_id=response["UserID"],
+            user_id=user_id,
             location_id=response["LocationID"],
+            database_id=response["DatabaseID"],
+            card_serial=response.get("Bundle", {})
+            .get("CardInformation", {})
+            .get("AccountNumber"),
+            user_token=user_token,
         )
 
     async def async_get_encryption_keys(self) -> None:
@@ -148,17 +174,11 @@ class Laundry:
         if self._auth_token == EMPTY_AUTH_TOKEN:
             raise NotLoggedIn
 
-        secret_raw = f"{self.profile.user_id}{REFRESH_REQUEST_PREHASH_SUFFIX}"
-
-        log.log(LOG_LEVEL_TRACE, "Secret Raw:\n%s\n\n", secret_raw)
-
-        hash_result = hashlib.md5(bytes(secret_raw, "utf-8"))  # nosec
-
-        secret_hash = hash_result.hexdigest()
-
-        log.log(LOG_LEVEL_TRACE, "Secret Hash:\n%s\n\n", secret_hash)
-
-        request_data = ["ConsolidatedRefresh", secret_hash, self.profile.user_id]
+        request_data = [
+            "ConsolidatedRefresh",
+            self.profile.user_token,
+            self.profile.user_id,
+        ]
 
         response = await self._send_request(json.dumps(request_data))
 
@@ -171,6 +191,109 @@ class Laundry:
 
         # Refresh machine status.
         self._process_machine_data(response.get("MachinesInformation", {}))
+
+    async def async_get_topoff_price(self, machine_id: str) -> None:
+        """Get topoff price for single machine, then update machine with price."""
+
+        if self._auth_token == EMPTY_AUTH_TOKEN:
+            raise NotLoggedIn
+
+        request_data = [
+            "GetVendPrice",
+            self.profile.user_token,
+            self.profile.user_id,
+            self.machines[machine_id]["reader_serial"],
+        ]
+
+        response = await self._send_request(json.dumps(request_data))
+
+        if isinstance(machine := self.machines[machine_id], LaundryMachine):
+            machine.topoff_price = response.get("TopoffPrice")
+
+    async def _async_log_vend(
+        self, machine_id: str, error_code: int, vend_success: bool
+    ) -> None:
+        """Log vend for a single machine."""
+
+        if self._auth_token == EMPTY_AUTH_TOKEN:
+            raise NotLoggedIn
+
+        try:
+            machine = self.machines[machine_id]
+        except AttributeError as err:
+            raise MachineNotFound(machine_id) from err
+
+        if not isinstance(machine, LaundryMachine):
+            raise MachineNotFound(machine_id)
+
+        request_data = [
+            "CreateVendLogEntry",
+            self.profile.user_token,
+            self.profile.user_id,
+            datetime.now().isoformat(),
+            self.profile.card_serial,
+            machine.reader_serial,
+            machine.number,
+            error_code,
+            vend_success,
+            False,
+            machine.base_price,  # Always base price, even when topping off
+        ]
+
+        response = await self._send_request(json.dumps(request_data))
+
+        if response.get("ResultCode") != 1:
+            log.error("Failed to log vend. Response: %s", response)
+            raise VendLogFailure
+
+    async def async_vend(self, machine_id: str) -> None:
+        """Vend a single machine and log result."""
+
+        if self._auth_token == EMPTY_AUTH_TOKEN:
+            raise NotLoggedIn
+
+        machine: LaundryMachine = self.machines[machine_id]
+
+        request_data = [
+            "VirtualVend",
+            self.profile.user_token,
+            self.profile.user_id,
+            machine.reader_serial,
+            self.profile.card_serial,
+        ]
+
+        try:
+            response = await self._send_request(json.dumps(request_data))
+        except (
+            UnexpectedError,
+            ResponseFormatError,
+            Rejected,
+            CommunicationError,
+        ) as err:
+            log.error("Communication error while vending.")
+            raise VendFailure from err
+
+        if response.get("ResultCode") not in [1, 161]:
+            log.error("Failed to vend machine. Response: %s", response)
+            raise VendFailure
+
+        log.debug("Vend successful. Logging vend...")
+
+        try:
+            await self._async_log_vend(
+                machine_id=machine_id,
+                error_code=response["ResultCode"],
+                vend_success=True,
+            )
+        except (
+            UnexpectedError,
+            ResponseFormatError,
+            Rejected,
+            CommunicationError,
+            VendLogFailure,
+        ) as err:
+            log.error("Error logging vend.")
+            raise VendLogFailure from err
 
     def _process_machine_data(self, machines_info_object: dict) -> None:
         """Update machine data from API MachinesInformation object."""
@@ -202,6 +325,8 @@ class Laundry:
                     online=bool(is_online)
                     if (is_online := machine.get("IsOnline")) in [True, False]
                     else None,
+                    reader_serial=machine.get("SerialNumber"),
+                    topoff_price=None,
                 )
 
             except KeyError:
