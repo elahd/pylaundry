@@ -27,3 +27,15 @@ class NotLoggedIn(Exception):
 
 class AuthenticationError(Exception):
     """User submitted invalid credentials."""
+
+
+class VendFailure(Exception):
+    """Failure vending."""
+
+
+class MachineNotFound(Exception):
+    """Machine not found."""
+
+
+class VendLogFailure(Exception):
+    """Failure logging vend."""

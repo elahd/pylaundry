@@ -40,8 +40,8 @@ def test_property__initial_state(laundry: Laundry) -> None:
 
 
 @pytest.mark.asyncio  # type: ignore
-async def test__async_login__basic_info(
-    laundry: Laundry, authentication_ok_response: pytest.fixture
+async def test__async_login__success__basic_info(
+    laundry: Laundry, authentication__response__success: pytest.fixture
 ) -> None:
     """Test authentication success."""
 
@@ -58,8 +58,8 @@ async def test__async_login__basic_info(
 
 
 @pytest.mark.asyncio  # type: ignore
-async def test__async_login__invalid_credentials(
-    laundry: Laundry, authentication_incorrect_creds_response: pytest.fixture
+async def test__async_login__response__incorrect_credentials(
+    laundry: Laundry, authentication__response__incorrect_credentials: pytest.fixture
 ) -> None:
     """Test authentication failure."""
 
@@ -70,8 +70,8 @@ async def test__async_login__invalid_credentials(
 
 
 @pytest.mark.asyncio  # type: ignore
-async def test__async_login__profile(
-    laundry: Laundry, authentication_ok_response: pytest.fixture
+async def test__async_login__success__profile(
+    laundry: Laundry, authentication__response__success: pytest.fixture
 ) -> None:
     """Test authentication success."""
 
@@ -87,8 +87,8 @@ async def test__async_login__profile(
 
 
 @pytest.mark.asyncio  # type: ignore
-async def test__async_login__machines(
-    laundry: Laundry, authentication_ok_response: pytest.fixture
+async def test__async_login__success__machines(
+    laundry: Laundry, authentication__response__success: pytest.fixture
 ) -> None:
     """Test authentication success."""
 
@@ -110,10 +110,10 @@ async def test__async_login__machines(
 
 
 @pytest.mark.asyncio  # type: ignore
-async def test__consolidated_refresh(
+async def test__consolidated_refresh__succcess(
     laundry: Laundry,
-    authentication_ok_response: pytest.fixture,
-    consolidated_refresh_success: pytest.fixture,
+    authentication__response__success: pytest.fixture,
+    consolidated_refresh__response__success: pytest.fixture,
 ) -> None:
     """Test that consolidated refresh updates macine states."""
 
@@ -130,4 +130,35 @@ async def test__consolidated_refresh(
         LaundryMachine,
     )
 
-    assert test_machine.minutes_remaining == 99
+    assert test_machine.base_price == 200
+
+
+@pytest.mark.asyncio  # type: ignore
+async def test__virtual_vend_topoff__success(
+    laundry: Laundry,
+    authentication__response__success: pytest.fixture,
+    virtual_vend_topoff__response__success: pytest.fixture,
+    vend_log_topoff__response__success: pytest.fixture,
+) -> None:
+    """Test that vend function doesn't raise exception."""
+
+    # Login
+    await laundry.async_login(username="test@example.com", password="hunter2")
+
+    # Vend Machine
+    await laundry.async_vend("a312b4b7-5110-5775-9966-ed9a6e087e3a")
+
+
+@pytest.mark.asyncio  # type: ignore
+async def test__vend_log_topoff__success(
+    laundry: Laundry,
+    authentication__response__success: pytest.fixture,
+    vend_log_topoff__response__success: pytest.fixture,
+) -> None:
+    """Test that vend log function doesn't raise exception."""
+
+    # Login
+    await laundry.async_login(username="test@example.com", password="hunter2")
+
+    # Log Vend
+    await laundry._async_log_vend("a312b4b7-5110-5775-9966-ed9a6e087e3a", 1, True)

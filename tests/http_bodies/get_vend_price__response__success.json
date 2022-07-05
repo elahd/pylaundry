@@ -1,0 +1,13 @@
+{
+    "DatabaseID": "df0dbd4a-b595-4c48-ba92-37441565f4c1",
+    "ReaderID": "2412af42-6ab4-44fe-a2eb-8ff790511e9f",
+    "ReaderSerialNumber": "10011684",
+    "BasePrice": 1.5,
+    "TopoffPrice": 0.25,
+    "BaseTime": 0,
+    "TopoffTime": 0,
+    "IsTopOffPossible": true,
+    "IsMachineBusy": true,
+    "ResultCode": 1,
+    "ResultText": "Vend price retrieved successfully."
+}

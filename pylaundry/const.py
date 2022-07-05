@@ -17,6 +17,12 @@ EMPTY_AUTH_TOKEN = "00000000-0000-0000-0000-000000000000"  # nosec
 APPKEY = "$#!@ES(*#D3$!318z"
 
 
+class VendResultCodes(IntEnum):
+    """Enum of known vend response codes."""
+
+    SUCCESS = 161
+
+
 class ServerResponseCodes(IntEnum):
     """Enum of known server response codes."""
 
@@ -24,6 +30,9 @@ class ServerResponseCodes(IntEnum):
     PARENT_OBJ_ERROR = 0
     SUCCESS = 1
     INVALID_CREDENTIALS = 105
+    INVALID_USER_ID = 108
+    TRY_AGAIN_LATER_BAD_REQUEST = 110  # Caused by incorrect request parameter.
+    TRY_AGAIN_LATER_SWIPE_FAILED = 118  # Machine is probably offline.
     INVALID_REQUEST = 122
 
 
