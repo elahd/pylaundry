@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 from dataclasses import dataclass
 from datetime import datetime
+from datetime import timezone
 from enum import Enum
 import hashlib
 import json
@@ -12,6 +13,7 @@ import logging
 import uuid
 
 import aiohttp
+import dateutil.parser
 
 from .const import API_ENDPOINT_URL
 from .const import APPKEY
@@ -198,11 +200,13 @@ class Laundry:
         if self._auth_token == EMPTY_AUTH_TOKEN:
             raise NotLoggedIn
 
+        machine: LaundryMachine = self.machines[machine_id]
+
         request_data = [
             "GetVendPrice",
             self.profile.user_token,
-            self.profile.user_id,
-            self.machines[machine_id]["reader_serial"],
+            self.profile.database_id,
+            machine.reader_serial,
         ]
 
         response = await self._send_request(json.dumps(request_data))
@@ -214,6 +218,9 @@ class Laundry:
         self, machine_id: str, error_code: int, vend_success: bool
     ) -> None:
         """Log vend for a single machine."""
+
+        # CyclePay logs each vend using this request, but this doesn't seem to be necessary to adding value to a machine.
+        # Just using async_vend() is sufficient to vend and update the user-facing activity log.
 
         if self._auth_token == EMPTY_AUTH_TOKEN:
             raise NotLoggedIn
@@ -230,7 +237,7 @@ class Laundry:
             "CreateVendLogEntry",
             self.profile.user_token,
             self.profile.user_id,
-            datetime.now().isoformat(),
+            str(datetime.now(timezone.utc)),
             self.profile.card_serial,
             machine.reader_serial,
             machine.number,
@@ -257,7 +264,7 @@ class Laundry:
         request_data = [
             "VirtualVend",
             self.profile.user_token,
-            self.profile.user_id,
+            self.profile.database_id,
             machine.reader_serial,
             self.profile.card_serial,
         ]
@@ -277,23 +284,25 @@ class Laundry:
             log.error("Failed to vend machine. Response: %s", response)
             raise VendFailure
 
-        log.debug("Vend successful. Logging vend...")
+        log.debug("Vend successful.")
 
-        try:
-            await self._async_log_vend(
-                machine_id=machine_id,
-                error_code=response["ResultCode"],
-                vend_success=True,
-            )
-        except (
-            UnexpectedError,
-            ResponseFormatError,
-            Rejected,
-            CommunicationError,
-            VendLogFailure,
-        ) as err:
-            log.error("Error logging vend.")
-            raise VendLogFailure from err
+        # Bypassing log. See note in _async_log_vend() for details.
+
+        # try:
+        #     await self._async_log_vend(
+        #         machine_id=machine_id,
+        #         error_code=response["ResultCode"],
+        #         vend_success=True,
+        #     )
+        # except (
+        #     UnexpectedError,
+        #     ResponseFormatError,
+        #     Rejected,
+        #     CommunicationError,
+        #     VendLogFailure,
+        # ) as err:
+        #     log.error("Error logging vend.")
+        #     raise VendLogFailure from err
 
     def _process_machine_data(self, machines_info_object: dict) -> None:
         """Update machine data from API MachinesInformation object."""
@@ -315,12 +324,23 @@ class Laundry:
                 elif setup_type == "Washer":
                     machine_type = MachineType.WASHER
 
+                # Determine how long ago state was reported.
+                state_age_min = (
+                    datetime.now(timezone.utc)
+                    - dateutil.parser.isoparse(machine["StateDateTimeUtc"])
+                ).total_seconds() / 60
+
+                # Adjust minutes remaining by state age.
+                minutes_remaining = max(
+                    0, round(machine.get("MinutesRemaining", 0) - state_age_min)
+                )
+
                 machines[machine_id] = LaundryMachine(
                     id_=machine["ReaderID"],
                     type=machine_type,
                     number=machine["Label"],
-                    busy=machine.get("IsBusy"),
-                    minutes_remaining=machine.get("MinutesRemaining"),
+                    busy=minutes_remaining > 0,
+                    minutes_remaining=minutes_remaining,
                     base_price=machine.get("BasePrice"),
                     online=bool(is_online)
                     if (is_online := machine.get("IsOnline")) in [True, False]
@@ -444,6 +464,13 @@ class Laundry:
 
         if response_code == ServerResponseCodes.INVALID_CREDENTIALS:
             raise AuthenticationError
+
+        if response_code == ServerResponseCodes.TRY_AGAIN_LATER_BAD_REQUEST:
+            raise CommunicationError
+
+        if response_code == ServerResponseCodes.TRY_AGAIN_LATER_SWIPE_FAILED:
+            log.error(msg := "Swipe failed. Machine is probably offline.")
+            raise VendFailure(msg)
 
         if response_code != ServerResponseCodes.SUCCESS:
             log.error(
