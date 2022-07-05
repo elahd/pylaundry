@@ -130,7 +130,7 @@ async def test__consolidated_refresh__succcess(
         LaundryMachine,
     )
 
-    assert test_machine.minutes_remaining == 99
+    assert test_machine.base_price == 200
 
 
 @pytest.mark.asyncio  # type: ignore
