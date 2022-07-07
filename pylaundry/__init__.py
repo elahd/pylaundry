@@ -27,6 +27,7 @@ from .const import ServerResponseCodes
 from .exceptions import AuthenticationError
 from .exceptions import CommunicationError
 from .exceptions import MachineNotFound
+from .exceptions import MachineOffline
 from .exceptions import NotLoggedIn
 from .exceptions import Rejected
 from .exceptions import ResponseFormatError
@@ -35,7 +36,7 @@ from .exceptions import VendFailure
 from .exceptions import VendLogFailure
 from .helpers import MessagePacker
 
-__version__ = "v0.1.3"
+__version__ = "v0.1.4"
 
 log = logging.getLogger(__name__)
 
@@ -59,6 +60,7 @@ class LaundryMachine:
     minutes_remaining: int | None
     base_price: float | None
     topoff_price: float | None
+    topoff_time_min: int | None
     online: bool | None
     reader_serial: str | None
 
@@ -194,8 +196,13 @@ class Laundry:
         # Refresh machine status.
         self._process_machine_data(response.get("MachinesInformation", {}))
 
-    async def async_get_topoff_price(self, machine_id: str) -> None:
+    async def async_get_topoff_data(self, machine_id: str) -> dict | None:
         """Get topoff price for single machine, then update machine with price."""
+
+        # TopoffTime seems to always be zero.
+
+        if self.machines[machine_id].type is not MachineType.DRYER:
+            return None
 
         if self._auth_token == EMPTY_AUTH_TOKEN:
             raise NotLoggedIn
@@ -209,10 +216,18 @@ class Laundry:
             machine.reader_serial,
         ]
 
-        response = await self._send_request(json.dumps(request_data))
+        try:
+            response = await self._send_request(json.dumps(request_data))
+        except MachineOffline as err:
+            raise err
 
-        if isinstance(machine := self.machines[machine_id], LaundryMachine):
-            machine.topoff_price = response.get("TopoffPrice")
+        machine.topoff_price = response.get("TopoffPrice")
+        machine.topoff_time_min = response.get("TopoffTime")
+
+        return {
+            "price": response.get("TopoffPrice"),
+            "time": response.get("TopoffTime"),
+        }
 
     async def _async_log_vend(
         self, machine_id: str, error_code: int, vend_success: bool
@@ -335,6 +350,18 @@ class Laundry:
                     0, round(machine.get("MinutesRemaining", 0) - state_age_min)
                 )
 
+                # Don't overwrite topoff data if machine already exists.
+                topoff_price = (
+                    self.machines[machine_id].topoff_price
+                    if hasattr(self, "machines")
+                    else None
+                )
+                topoff_time_min = (
+                    self.machines[machine_id].topoff_time_min
+                    if hasattr(self, "machines")
+                    else None
+                )
+
                 machines[machine_id] = LaundryMachine(
                     id_=machine["ReaderID"],
                     type=machine_type,
@@ -346,7 +373,8 @@ class Laundry:
                     if (is_online := machine.get("IsOnline")) in [True, False]
                     else None,
                     reader_serial=machine.get("SerialNumber"),
-                    topoff_price=None,
+                    topoff_price=topoff_price,
+                    topoff_time_min=topoff_time_min,
                 )
 
             except KeyError:
@@ -469,8 +497,11 @@ class Laundry:
             raise CommunicationError
 
         if response_code == ServerResponseCodes.TRY_AGAIN_LATER_SWIPE_FAILED:
-            log.error(msg := "Swipe failed. Machine is probably offline.")
-            raise VendFailure(msg)
+            msg = (
+                "Request failed. Machine is probably offline. Response message:"
+                f" {unpacked_content.get(RESULT_TEXT_KEY)}"
+            )
+            raise MachineOffline(msg)
 
         if response_code != ServerResponseCodes.SUCCESS:
             log.error(

@@ -29,7 +29,7 @@ async def main() -> None:
 
         for machine_id in laundry.machines:
             try:
-                await laundry.async_get_topoff_price(machine_id=machine_id)
+                await laundry.async_get_topoff_data(machine_id=machine_id)
             except CommunicationError:
                 print(f"Could not get topoff price for machine {machine_id}.")
 

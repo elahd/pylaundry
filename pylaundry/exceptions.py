@@ -39,3 +39,7 @@ class MachineNotFound(Exception):
 
 class VendLogFailure(Exception):
     """Failure logging vend."""
+
+
+class MachineOffline(Exception):
+    """Machine not found."""
