@@ -14,7 +14,7 @@
 
 ## Purpose
 
-pylaundry allows developers to make the ESD CyclePay system interoperable with custom scripts and third party systems like Home Assistant. The library supports querying machine status and virtual card balances. If your building's laundry room supports one of the below apps, you should be able to use pylibrary:
+pylaundry allows developers to make the ESD CyclePay system interoperable with custom scripts and third party systems like Home Assistant. The library supports querying machine status, checking virtual card balances, and using your virtual card to add money to machines. If your building's laundry room supports one of the below apps, you should be able to use pylaundry:
 
 | Logo                                                                                                                           | Name              | Links                                                                                                                                                                    |
 | ------------------------------------------------------------------------------------------------------------------------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -40,6 +40,46 @@ This library powers the [CyclePay for Home Assistant](https://github.com/elahd/h
 2. Add money to machine from virtual laundry card.
 3. Check whether washer/dryer is running and how much time is left in the current cycle, among other attributes.
 
-### Roadmapped
+## Airing of Grievances
 
-1. Add money to virtual card.
+<img src="https://user-images.githubusercontent.com/466460/178060626-e447b18d-51ce-4cab-b366-a15063b17048.png" width="300px" />
+
+Doing laundry is my zen activity. ESD's payment interfaces ruined this for me by introducing these unnecessary annoyances:
+
+### Hardware
+
+<img src="https://user-images.githubusercontent.com/466460/174495294-14709554-cb30-4949-8f1a-650dc18784b9.gif" width="200px" />
+
+Well designed commercial dryer control panels let users add time to their dryer cycle by pressing the dryer's start button multiple times while their payment card is inserted. ESD revisited this solved problem and delievered a solution that requires users to remove and redip their card once for each 5-minute topoff. Loading a 60 minute dryer cycle requires 7 dips and works like this:
+
+1. Insert card; wait for machine to read the card's balance.
+2. Press button for desired cycle. This adds 30 minutes to the timer and starts the machine.
+3. Remove card, then reinsert and wait for the machine to read the card's balance. This adds 5 minutes to the timer; 35 minutes total.
+4. Remove card, then reinsert and wait for the machine to read the card's balance. Except it can't read the balance and displays a card read error instead. Timer is still at 35 minutes.
+5. Remove card, then reinsert and wait for the machine to read the card's balance. Adds 5 minutes; now 40 minutes total.
+6. Redip, wait, +5. 45 minutes.
+7. Redip, wait, read error. Still at 45.
+8. Redip, wait, read error. Still at 45.
+9. Redip, wait, read error. Still at 45.
+10. Redip, wait, +5. 50 minutes.
+11. Redip, wait, +5. 55 minutes.
+12. Redip, wait, read error. Still at 55.
+13. Redip, wait, +5. 60 minutes.
+
+Now you're done! Just kidding. You have a family, so you get to repeat that process a few more times for your remaining loads.
+
+Aside from the annoyance, the extra dips mean that ESD chip cards and chip card readers wear out ~six times sooner than competitor hardware. This is purely anecdotal, but I've had to replace the laundry card in my current building 4 times in 3 years due to wear.
+
+### Software
+
+About a year into living in my current apartment, ESD rolled out support for their CyclePay app. "Finally," I thought, "I'll be able to do laundry with dignity." Nope. CyclePay is just as bad.
+
+I expected this app to let me select the amount of time or money I wanted to load onto a dryer. For a 60 minute cycle, I thought that I'd just be able to tell the app to load 60 minutes (or $3).
+
+In actuality, the app mimics the actions users take with the old physical chip cards. Instead of letting users load the machines by value or time, you load by virtual swipes. One swipe adds the first 30 minutes; each additional swipe adds another 5 minutes.
+
+Each swipe also requires re-selecting your machine and tapping through TWO confirmations. That's 4 taps and around 6 seconds — if you're fast — for each swipe.
+
+Loading 3 dryers with 60 minutes each takes 84 — **EIGHTY FOUR**_!!!!!_ — taps on your phone. That's _insane_. In a perfect environment, those 84 taps take a brain melting 2 minutes and 6 seconds to complete.
+
+![ezgif com-gif-maker (3)](https://user-images.githubusercontent.com/466460/175664816-ade25bef-5671-4ae3-bc25-afcff224a38c.gif)
