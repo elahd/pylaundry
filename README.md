@@ -50,7 +50,7 @@ I wrote this library after moving into a building with ESD hardware. Doing laund
 
 <img src="https://user-images.githubusercontent.com/466460/174495294-14709554-cb30-4949-8f1a-650dc18784b9.gif" width="200px" />
 
-Well designed commercial dryers let users add time to their cycle by pressing the dryer's start button. One press adds 30 minutes to the timer and starts the cycle; every additional press adds 5 minutes. **ESD revisited this solved problem and delievered a card reader that requires users to _remove and redip_ their card once for each action.** One dip (and press) adds 30 minutes to the timer; every additional dip adds 5 minutes. This is what loading a 60 minute dryer cycle looks like:
+Well designed commercial dryers let users add time to their cycle by pressing the dryer's start button. One press adds 30 minutes to the timer and starts the cycle; every additional press adds 5 minutes. **ESD revisited this solved problem and delievered a card reader that requires users to _remove and redip_ their card once for each vend.** One dip (and press) adds 30 minutes to the timer; every additional dip adds 5 minutes. This is what loading a 60 minute dryer cycle looks like:
 
 1. Insert card; wait for machine to read the card's balance.
 2. Press button for desired cycle. This adds 30 minutes to the timer and starts the machine.
