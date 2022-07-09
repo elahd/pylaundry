@@ -50,7 +50,7 @@ I wrote this library after moving into a building with ESD hardware. Doing laund
 
 <img src="https://user-images.githubusercontent.com/466460/174495294-14709554-cb30-4949-8f1a-650dc18784b9.gif" width="200px" />
 
-Well designed commercial dryers let users add time to their cycle by pressing the dryer's start button. One press adds 30 minutes to the timer and starts the cycle; every additional press adds 5 minutes. ESD revisited this solved problem and delievered a card reader that requires users to _remove and redip_ their card once for each action. One dip (and press) adds 30 minutes to the timer; every additional dip adds 5 minutes. This is what loading a 60 minute dryer cycle looks like:
+Well designed commercial dryers let users add time to their cycle by pressing the dryer's start button. One press adds 30 minutes to the timer and starts the cycle; every additional press adds 5 minutes. **ESD revisited this solved problem and delievered a card reader that requires users to _remove and redip_ their card once for each action.** One dip (and press) adds 30 minutes to the timer; every additional dip adds 5 minutes. This is what loading a 60 minute dryer cycle looks like:
 
 1. Insert card; wait for machine to read the card's balance.
 2. Press button for desired cycle. This adds 30 minutes to the timer and starts the machine.
@@ -70,15 +70,15 @@ Now you're done!
 
 Just kidding. You have a family, so you get to repeat that process a few more times for your remaining loads.
 
-Annoyances aside, the extra dips mean that ESD chip cards and chip card readers wear out six times earlier than competitor hardware. This is purely anecdotal, but I've had to replace the laundry card in my current building 4 times in 3 years due to wear.
+Additionally, all other things being equal, these extra dips mean that **ESD chip cards and chip card readers probably wear out six times earlier than competitor hardware** as ESD cards need to be dipped 6 times more per cycle. This is anecdotal, but I've had to replace the laundry card in my current building 4 times in 3 years due to wear.
 
 ### Software
 
-About a year into living in my current apartment, ESD rolled out support for their CyclePay app. "Finally," I thought, "Zen activity restored." Nope. CyclePay is just as bad.
+About a year into living in my current apartment, ESD rolled out support for their CyclePay app. "Finally," I thought, "I can reclaim my zen activity." Nope. CyclePay is just as frustrating.
 
-I expected CyclePay to just let me add, say, 60 minutes to dryer with one or two taps. New medium, new medium-appripriate workflow. In actuality, the app just mimics the workflow of the physical chip cards by forcing users to virtually swipe virtual cards. One swipe adds the first 30 minutes; each additional swipe adds another 5 minutes.
+I expected CyclePay to just let me add, say, 60 minutes to a dryer with one or two taps. New medium, new medium-appropriate workflow.
 
-Each swipe requires 4 taps and takes around 6 seconds — if you're fast, requires tapping through TWO separate confirmations, and require that you re-select your machine after every swipe.
+In actuality, the app just mimics the workflow of the physical chip cards by forcing users to virtually swipe virtual cards. One swipe adds the first 30 minutes; each additional swipe adds another 5 minutes. Each swipe requires 4 taps and takes around 6 seconds — if you're fast — requires tapping through _two_ separate confirmations, and requires that you re-select your machine after every swipe. So...
 
 ---
 **Loading 3 dryers with 60 minutes each takes 84 — _EIGHTY FOUR !!!!!_ — taps.**
