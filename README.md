@@ -44,7 +44,7 @@ This library powers the [CyclePay for Home Assistant](https://github.com/elahd/h
 
 <img src="https://user-images.githubusercontent.com/466460/178060626-e447b18d-51ce-4cab-b366-a15063b17048.png" width="300px" />
 
-I wrote this library after moving into a building with ESD hardware. Doing laundry is my zen activity. Adding time to a dryer cycle with ESD's hardware is not zen. Here's why:
+I wrote this library after moving into a building with ESD hardware. Doing laundry is my zen activity. Adding money to a dryer with ESD's hardware is not zen. Here's why:
 
 ### Hardware
 
