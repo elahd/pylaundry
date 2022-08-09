@@ -87,6 +87,8 @@ In actuality, the app just mimics the workflow of the physical chip cards by for
 
 **In a perfect environment, those 84 taps take a brain melting _2 minutes and 6 seconds_ to complete.**
 
+...and that's if you're standing right in front of the machine (allowing CyclePay to vend via Bluetooth). If you want to finish loading your dryers while going back to your apartment, the app vends using the laundry machines' Wi-Fi connections. The app takes ~5 times as long to vend over Wi-Fi and relys on the machines being connected to WiFi in the first place, which they are often not. In my laundry room, around 10% of the machines seem to be disconnected at any time.
+
 ---
 
 ![ezgif com-gif-maker (3)](https://user-images.githubusercontent.com/466460/175664816-ade25bef-5671-4ae3-bc25-afcff224a38c.gif)
