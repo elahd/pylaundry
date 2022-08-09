@@ -71,7 +71,7 @@ class MessagePacker:
     ) -> tuple[str, str]:
         """Pack request body for transmission to server."""
 
-        # https://gist.github.com/brysontyrrell/7cebfb05105c25d00e84ed35bd821dfe
+        # Reference for doing AES in Python: https://gist.github.com/brysontyrrell/7cebfb05105c25d00e84ed35bd821dfe
 
         # new_request_id generated automatically. If debugging intercepted communications, provide actual new_request_id
 
