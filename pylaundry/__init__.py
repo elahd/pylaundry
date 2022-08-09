@@ -158,7 +158,7 @@ class Laundry:
     async def async_get_encryption_keys(self) -> None:
         """Get encryption keys from server."""
 
-        # Purpose of these keys is TBD. Presumably, they're used for dispense / reload transactions.
+        # Purpose of these keys is TBD. They're not used for sending funds to machines. Are they used for credit card transactions?
 
         if self._auth_token == EMPTY_AUTH_TOKEN:
             raise NotLoggedIn
