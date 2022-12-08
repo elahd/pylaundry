@@ -111,8 +111,10 @@ class Laundry:
                 username,
                 password,
                 self.installation_token,
-                '{"droidDisplay":"LMY47E","droidBrand":"Android","droidProduct":"sdk_phone_x86","droidDevice":"shamu","droidManufacturer":"motorola","droidModel":"Nexus'
-                ' 6","droidHardware":"ranchu","droidSDK":28,"droidVersionRelease":"9","droidVersionIncremental":"4923214","droidVersionCodeName":"REL","droidIsRooted":false,"droidAppVersion":"4.09","droidAppBundleID":"com.esd.laundrylink.hercules"}',
+                (
+                    '{"droidDisplay":"LMY47E","droidBrand":"Android","droidProduct":"sdk_phone_x86","droidDevice":"shamu","droidManufacturer":"motorola","droidModel":"Nexus'
+                    ' 6","droidHardware":"ranchu","droidSDK":28,"droidVersionRelease":"9","droidVersionIncremental":"4923214","droidVersionCodeName":"REL","droidIsRooted":false,"droidAppVersion":"4.09","droidAppBundleID":"com.esd.laundrylink.hercules"}'
+                ),
             ]
 
             response = await self._send_request(json.dumps(request_data))
