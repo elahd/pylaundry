@@ -83,7 +83,8 @@ repos:
         entry: pylint
         language: system
         types: [python]
-        exclude: (.vscode|.devcontainer|.github|test)
+        exclude: (.vscode|.devcontainer|.mypy_cache|pylint)
         args:
           - --output-format=colorized
           - -d W0511
+          - --fail-on=all
