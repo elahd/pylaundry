@@ -36,7 +36,7 @@ from .exceptions import VendFailure
 from .exceptions import VendLogFailure
 from .helpers import MessagePacker
 
-__version__ = "v0.1.4"
+__version__ = "v0.1.5"
 
 log = logging.getLogger(__name__)
 
