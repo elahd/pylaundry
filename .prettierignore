@@ -1,0 +1,11 @@
+# File Version: 2023.01.27
+
+# Prettier doesn't support pyproject.toml
+
+# Ignore everything
+**/**
+tests/responses/**
+
+# Except
+!*.toml
+!*.yaml

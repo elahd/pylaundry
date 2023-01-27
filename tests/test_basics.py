@@ -1,19 +1,15 @@
 """Tests for basic functions."""
 
-# pylint: disable=protected-access, missing-class-docstring, no-self-use
+# pylint: disable=protected-access
 
 import uuid
 
 import aiohttp
-from pylaundry import Laundry
-from pylaundry import LaundryMachine
-from pylaundry.const import EMPTY_AUTH_TOKEN
-from pylaundry.exceptions import AuthenticationError
 import pytest
 
-# import json
-
-# from deepdiff import DeepDiff
+from pylaundry import Laundry, LaundryMachine
+from pylaundry.const import EMPTY_AUTH_TOKEN
+from pylaundry.exceptions import AuthenticationError
 
 
 def test_property__initial_state(laundry: Laundry) -> None:

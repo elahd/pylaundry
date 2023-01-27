@@ -4,8 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass
-from datetime import datetime
-from datetime import timezone
+from datetime import datetime, timezone
 from enum import Enum
 import hashlib
 import json
@@ -15,25 +14,29 @@ import uuid
 import aiohttp
 import dateutil.parser
 
-from .const import API_ENDPOINT_URL
-from .const import APPKEY
-from .const import AUTH_TOKEN_KEY
-from .const import EMPTY_AUTH_TOKEN
-from .const import LOG_LEVEL_TRACE
-from .const import REFRESH_REQUEST_PREHASH_SUFFIX
-from .const import RESULT_CODE_KEY
-from .const import RESULT_TEXT_KEY
-from .const import ServerResponseCodes
-from .exceptions import AuthenticationError
-from .exceptions import CommunicationError
-from .exceptions import MachineNotFound
-from .exceptions import MachineOffline
-from .exceptions import NotLoggedIn
-from .exceptions import Rejected
-from .exceptions import ResponseFormatError
-from .exceptions import UnexpectedError
-from .exceptions import VendFailure
-from .exceptions import VendLogFailure
+from .const import (
+    API_ENDPOINT_URL,
+    APPKEY,
+    AUTH_TOKEN_KEY,
+    EMPTY_AUTH_TOKEN,
+    LOG_LEVEL_TRACE,
+    REFRESH_REQUEST_PREHASH_SUFFIX,
+    RESULT_CODE_KEY,
+    RESULT_TEXT_KEY,
+    ServerResponseCodes,
+)
+from .exceptions import (
+    AuthenticationError,
+    CommunicationError,
+    MachineNotFound,
+    MachineOffline,
+    NotLoggedIn,
+    Rejected,
+    ResponseFormatError,
+    UnexpectedError,
+    VendFailure,
+    VendLogFailure,
+)
 from .helpers import MessagePacker
 
 __version__ = "v0.1.5"
