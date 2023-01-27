@@ -9,13 +9,9 @@ import logging
 import urllib.parse
 import uuid
 
-from cryptography.hazmat.primitives.ciphers import algorithms
-from cryptography.hazmat.primitives.ciphers import Cipher
-from cryptography.hazmat.primitives.ciphers import modes
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
-from .const import AES_IV
-from .const import AES_SUFFIX_PREAUTH
-from .const import LOG_LEVEL_TRACE
+from .const import AES_IV, AES_SUFFIX_PREAUTH, LOG_LEVEL_TRACE
 from .exceptions import MessagePackerError
 
 log = logging.getLogger(__name__)

@@ -2,17 +2,16 @@
 
 # pylint: disable = redefined-outer-name
 
-from collections.abc import AsyncGenerator
-from collections.abc import Generator
+from collections.abc import AsyncGenerator, Generator
 
 import aiohttp
 from aioresponses import aioresponses
-from pylaundry import Laundry
-from pylaundry.const import API_ENDPOINT_URL
 import pytest
 
-from .http_bodies import get_http_body
+from pylaundry import Laundry
+from pylaundry.const import API_ENDPOINT_URL
 
+from .http_bodies import get_http_body
 
 #
 # Meta Fixtures
