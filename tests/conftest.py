@@ -5,8 +5,8 @@
 from collections.abc import AsyncGenerator, Generator
 
 import aiohttp
-from aioresponses import aioresponses
 import pytest
+from aioresponses import aioresponses
 
 from pylaundry import Laundry
 from pylaundry.const import API_ENDPOINT_URL
@@ -18,15 +18,15 @@ from .http_bodies import get_http_body
 #
 
 
-@pytest.fixture  # type: ignore
+@pytest.fixture
 def response_mocker() -> Generator:
     """Yield aioresponses."""
     with aioresponses() as mocker:
         yield mocker
 
 
-@pytest.fixture  # type: ignore
-@pytest.mark.asyncio  # type: ignore
+@pytest.fixture
+@pytest.mark.asyncio
 async def laundry() -> AsyncGenerator:
     """Build and return dummy controller for testing without Alarm.com API."""
 
@@ -39,7 +39,7 @@ async def laundry() -> AsyncGenerator:
 #
 
 
-@pytest.fixture  # type: ignore
+@pytest.fixture
 def additional_information__response__success(response_mocker: aioresponses) -> None:
     """Success response for additional information."""
 
@@ -51,7 +51,7 @@ def additional_information__response__success(response_mocker: aioresponses) -> 
     )
 
 
-@pytest.fixture  # type: ignore
+@pytest.fixture
 def authentication__response__success(response_mocker: aioresponses) -> None:
     """Success response for authentication."""
 
@@ -63,7 +63,7 @@ def authentication__response__success(response_mocker: aioresponses) -> None:
     )
 
 
-@pytest.fixture  # type: ignore
+@pytest.fixture
 def authentication__response__incorrect_credentials(
     response_mocker: aioresponses,
 ) -> None:
@@ -77,7 +77,7 @@ def authentication__response__incorrect_credentials(
     )
 
 
-@pytest.fixture  # type: ignore
+@pytest.fixture
 def consolidated_refresh__response__success(response_mocker: aioresponses) -> None:
     """Success response for consolidated refresh."""
 
@@ -89,7 +89,7 @@ def consolidated_refresh__response__success(response_mocker: aioresponses) -> No
     )
 
 
-@pytest.fixture  # type: ignore
+@pytest.fixture
 def general__response__incorrect_packing(response_mocker: aioresponses) -> None:
     """Incorrect packing response for any request."""
 
@@ -101,7 +101,7 @@ def general__response__incorrect_packing(response_mocker: aioresponses) -> None:
     )
 
 
-@pytest.fixture  # type: ignore
+@pytest.fixture
 def get_vend_price__response__success(response_mocker: aioresponses) -> None:
     """Success response for get vend price."""
 
@@ -113,7 +113,7 @@ def get_vend_price__response__success(response_mocker: aioresponses) -> None:
     )
 
 
-@pytest.fixture  # type: ignore
+@pytest.fixture
 def vend_log_topoff__response__success(response_mocker: aioresponses) -> None:
     """Success response for vend log."""
 
@@ -125,7 +125,7 @@ def vend_log_topoff__response__success(response_mocker: aioresponses) -> None:
     )
 
 
-@pytest.fixture  # type: ignore
+@pytest.fixture
 def virtual_vend_topoff__response__success(response_mocker: aioresponses) -> None:
     """Success response for virtual vend topoff."""
 
@@ -144,7 +144,7 @@ def virtual_vend_topoff__response__success(response_mocker: aioresponses) -> Non
 # TODO: Test request objects.
 
 
-@pytest.fixture  # type: ignore
+@pytest.fixture
 def additional_information__request(response_mocker: aioresponses) -> None:
     """Request for additional information."""
 
@@ -156,7 +156,7 @@ def additional_information__request(response_mocker: aioresponses) -> None:
     )
 
 
-@pytest.fixture  # type: ignore
+@pytest.fixture
 def authentication__request(response_mocker: aioresponses) -> None:
     """Request for authentication."""
 
@@ -168,7 +168,7 @@ def authentication__request(response_mocker: aioresponses) -> None:
     )
 
 
-@pytest.fixture  # type: ignore
+@pytest.fixture
 def consolidated_refresh__request(response_mocker: aioresponses) -> None:
     """Request for consolidated refresh."""
 
@@ -180,7 +180,7 @@ def consolidated_refresh__request(response_mocker: aioresponses) -> None:
     )
 
 
-@pytest.fixture  # type: ignore
+@pytest.fixture
 def get_vend_price__request(response_mocker: aioresponses) -> None:
     """Request for get vend price."""
 
@@ -192,7 +192,7 @@ def get_vend_price__request(response_mocker: aioresponses) -> None:
     )
 
 
-@pytest.fixture  # type: ignore
+@pytest.fixture
 def vend_log__request(response_mocker: aioresponses) -> None:
     """Request for vend log."""
 
@@ -204,7 +204,7 @@ def vend_log__request(response_mocker: aioresponses) -> None:
     )
 
 
-@pytest.fixture  # type: ignore
+@pytest.fixture
 def virtual_vend__request(response_mocker: aioresponses) -> None:
     """Request for virtual vend."""
 

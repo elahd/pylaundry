@@ -1,0 +1,69 @@
+{
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "github.codespaces",
+                "ryanluker.vscode-coverage-gutters",
+                "donjayamanne.githistory",
+                "github.vscode-pull-request-github",
+                "bungcip.better-toml",
+                "donjayamanne.python-extension-pack",
+                "marklarah.pre-commit-vscode",
+                "eamodio.gitlens",
+                "ms-python.black-formatter",
+                "ms-python.mypy-type-checker",
+                "charliermarsh.ruff",
+                "esbenp.prettier-vscode",
+                "EditorConfig.EditorConfig",
+                "ms-python.python",
+                "ms-python.mypy-type-checker"
+            ],
+            "settings": {
+                "[python]": {
+                    "editor.codeActionsOnSave": {
+                        "source.fixAll.ruff": true,
+                        "source.organizeImports": true
+                    },
+                    "editor.defaultFormatter": "ms-python.black-formatter",
+                    "editor.formatOnPaste": false,
+                    "editor.formatOnSave": true,
+                    "editor.formatOnType": true
+                },
+                "[yaml]": {
+                    "editor.defaultFormatter": "esbenp.prettier-vscode"
+                },
+                "python.analysis.autoSearchPaths": false,
+                "python.analysis.extraPaths": ["/workspaces/pylaundry"],
+                "python.formatting.provider": "black",
+                "python.linting.enabled": true,
+                "python.languageServer": "Pylance",
+                "python.testing.pytestEnabled": true,
+                "python.linting.mypyEnabled": false,
+                // "python.linting.pylintEnabled": true,
+                "python.analysis.exclude": ["/**/.*/", "**/__pycache__"],
+                "python.analysis.diagnosticMode": "workspace",
+                "python.analysis.typeCheckingMode": "off",
+                "python.analysis.include": [
+                    "**/custom_components/ha-cyclepay",
+                    "**/pylaundry/pylaundry",
+                    "**/pylaundry/tests",
+                    "**/pylaundry/examples"
+                ],
+                "python.analysis.packageIndexDepths": [
+                    {
+                        "name": "pylaundry",
+                        "depth": 5,
+                        "includeAllSymbols": true
+                    }
+                ]
+            }
+        }
+    },
+    "features": {
+        "github-cli": "latest"
+    },
+    "image": "mcr.microsoft.com/vscode/devcontainers/python:0-3.10-bullseye",
+    "name": "pylaundry",
+    "postCreateCommand": ["scripts/setup.sh"],
+    "remoteUser": "vscode"
+}

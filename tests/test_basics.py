@@ -35,7 +35,7 @@ def test_property__initial_state(laundry: Laundry) -> None:
     assert laundry._auth_token == EMPTY_AUTH_TOKEN
 
 
-@pytest.mark.asyncio  # type: ignore
+@pytest.mark.asyncio
 async def test__async_login__success__basic_info(
     laundry: Laundry, authentication__response__success: pytest.fixture
 ) -> None:
@@ -53,19 +53,17 @@ async def test__async_login__success__basic_info(
     assert laundry.profile
 
 
-@pytest.mark.asyncio  # type: ignore
+@pytest.mark.asyncio
 async def test__async_login__response__incorrect_credentials(
     laundry: Laundry, authentication__response__incorrect_credentials: pytest.fixture
 ) -> None:
     """Test authentication failure."""
 
     with pytest.raises(AuthenticationError):
-        await laundry.async_login(
-            username="incorrect@example.com", password="incorrect"
-        )
+        await laundry.async_login(username="incorrect@example.com", password="incorrect")
 
 
-@pytest.mark.asyncio  # type: ignore
+@pytest.mark.asyncio
 async def test__async_login__success__profile(
     laundry: Laundry, authentication__response__success: pytest.fixture
 ) -> None:
@@ -74,15 +72,12 @@ async def test__async_login__success__profile(
     await laundry.async_login(username="test@example.com", password="hunter2")
 
     assert laundry.profile.card_balance == 1.75
-    assert (
-        laundry.profile.location_address
-        == "270 Commerce Dr., Fort Washington, PA 19034"
-    )
+    assert laundry.profile.location_address == "270 Commerce Dr., Fort Washington, PA 19034"
     assert laundry.profile.location_id == "dd240cf3-7702-5101-8b5b-6dbcdda95d07"
     assert laundry.profile.user_id == "4e353d4d-a9c9-5867-9324-99dbe26d9c35"
 
 
-@pytest.mark.asyncio  # type: ignore
+@pytest.mark.asyncio
 async def test__async_login__success__machines(
     laundry: Laundry, authentication__response__success: pytest.fixture
 ) -> None:
@@ -105,7 +100,7 @@ async def test__async_login__success__machines(
     assert test_machine.base_price == 1.5
 
 
-@pytest.mark.asyncio  # type: ignore
+@pytest.mark.asyncio
 async def test__consolidated_refresh__succcess(
     laundry: Laundry,
     authentication__response__success: pytest.fixture,
@@ -129,7 +124,7 @@ async def test__consolidated_refresh__succcess(
     assert test_machine.base_price == 200
 
 
-@pytest.mark.asyncio  # type: ignore
+@pytest.mark.asyncio
 async def test__virtual_vend_topoff__success(
     laundry: Laundry,
     authentication__response__success: pytest.fixture,
@@ -145,7 +140,7 @@ async def test__virtual_vend_topoff__success(
     await laundry.async_vend("a312b4b7-5110-5775-9966-ed9a6e087e3a")
 
 
-@pytest.mark.asyncio  # type: ignore
+@pytest.mark.asyncio
 async def test__vend_log_topoff__success(
     laundry: Laundry,
     authentication__response__success: pytest.fixture,

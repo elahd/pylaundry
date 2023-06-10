@@ -2,8 +2,8 @@
 
 import base64
 import gzip
-from importlib import resources
 import json
+from importlib import resources
 
 
 def pack_server_response(response_body: str) -> bytes:

@@ -7,13 +7,13 @@ from enum import IntEnum
 #
 
 API_ENDPOINT_URL = "https://mapp.mylaundrylink.com/AppRequestHandler.aspx"
-AUTH_TOKEN_KEY = "CP_AUTH_TOKEN"  # nosec
+AUTH_TOKEN_KEY = "CP_AUTH_TOKEN"  # noqa: S105
 RESULT_CODE_KEY = "ResultCode"
 RESULT_TEXT_KEY = "ResultText"
 REFRESH_REQUEST_PREHASH_SUFFIX = (  # Appended to user ID, then MD5 hashed. Used in body data refresh requests.
     "b1c/B?D(G+1bPeSh"
 )
-EMPTY_AUTH_TOKEN = "00000000-0000-0000-0000-000000000000"  # nosec
+EMPTY_AUTH_TOKEN = "00000000-0000-0000-0000-000000000000"  # noqa: S105
 APPKEY = "$#!@ES(*#D3$!318z"
 
 

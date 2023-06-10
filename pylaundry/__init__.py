@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 import asyncio
-from dataclasses import dataclass
-from datetime import datetime, timezone
-from enum import Enum
 import hashlib
 import json
 import logging
 import uuid
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from enum import Enum
 
 import aiohttp
 import dateutil.parser
@@ -127,36 +127,29 @@ class Laundry:
             ResponseFormatError,
             Rejected,
             AuthenticationError,
-        ) as err:
-            raise err
+        ):
+            log.exception("Failed to log in.")
+            raise
 
-        self._process_machine_data(
-            response.get("Bundle", {}).get("MachinesInformation", {})
-        )
+        self._process_machine_data(response.get("Bundle", {}).get("MachinesInformation", {}))
 
         # Assemble user token
-        user_token_raw = (
-            f"{(user_id := response['UserID'])}{REFRESH_REQUEST_PREHASH_SUFFIX}"
-        )
+        user_token_raw = f"{(user_id := response['UserID'])}{REFRESH_REQUEST_PREHASH_SUFFIX}"
 
         log.log(LOG_LEVEL_TRACE, "Secret Raw:\n%s\n\n", user_token_raw)
 
-        userhash_md5 = hashlib.md5(bytes(user_token_raw, "utf-8"))  # nosec
+        userhash_md5 = hashlib.md5(bytes(user_token_raw, "utf-8"))  # nosec  # noqa: S324
 
         user_token = userhash_md5.hexdigest()
 
         # Assemble profile
         self.profile = LaundryProfile(
             location_address=response["LocationAddress"],
-            card_balance=response.get("Bundle", {})
-            .get("CardInformation", {})
-            .get("Balance"),
+            card_balance=response.get("Bundle", {}).get("CardInformation", {}).get("Balance"),
             user_id=user_id,
             location_id=response["LocationID"],
             database_id=response["DatabaseID"],
-            card_serial=response.get("Bundle", {})
-            .get("CardInformation", {})
-            .get("AccountNumber"),
+            card_serial=response.get("Bundle", {}).get("CardInformation", {}).get("AccountNumber"),
             user_token=user_token,
         )
 
@@ -193,9 +186,7 @@ class Laundry:
 
         # Refresh card balance.
         self.profile.card_balance = (
-            balance
-            if (balance := response.get("CardInformation", {}).get("Balance"))
-            else None
+            balance if (balance := response.get("CardInformation", {}).get("Balance")) else None
         )
 
         # Refresh machine status.
@@ -221,10 +212,8 @@ class Laundry:
             machine.reader_serial,
         ]
 
-        try:
-            response = await self._send_request(json.dumps(request_data))
-        except MachineOffline as err:
-            raise err
+        # Raises MachineOffline
+        response = await self._send_request(json.dumps(request_data))
 
         machine.topoff_price = response.get("TopoffPrice")
         machine.topoff_time_min = response.get("TopoffTime")
@@ -234,9 +223,7 @@ class Laundry:
             "time": response.get("TopoffTime"),
         }
 
-    async def _async_log_vend(
-        self, machine_id: str, error_code: int, vend_success: bool
-    ) -> None:
+    async def _async_log_vend(self, machine_id: str, error_code: int, vend_success: bool) -> None:
         """Log vend for a single machine."""
 
         # CyclePay logs each vend using this request, but this doesn't seem to be necessary to adding value to a machine.
@@ -297,7 +284,7 @@ class Laundry:
             Rejected,
             CommunicationError,
         ) as err:
-            log.error("Communication error while vending.")
+            log.exception("Communication error while vending.")
             raise VendFailure from err
 
         if response.get("ResultCode") not in [1, 161]:
@@ -334,7 +321,6 @@ class Laundry:
 
         machine: dict
         for machine in machines_info_object.get("Machines", []):
-
             try:
                 machine_id = machine["ReaderID"]
 
@@ -346,26 +332,15 @@ class Laundry:
 
                 # Determine how long ago state was reported.
                 state_age_min = (
-                    datetime.now(timezone.utc)
-                    - dateutil.parser.isoparse(machine["StateDateTimeUtc"])
+                    datetime.now(timezone.utc) - dateutil.parser.isoparse(machine["StateDateTimeUtc"])
                 ).total_seconds() / 60
 
                 # Adjust minutes remaining by state age.
-                minutes_remaining = max(
-                    0, round(machine.get("MinutesRemaining", 0) - state_age_min)
-                )
+                minutes_remaining = max(0, round(machine.get("MinutesRemaining", 0) - state_age_min))
 
                 # Don't overwrite topoff data if machine already exists.
-                topoff_price = (
-                    self.machines[machine_id].topoff_price
-                    if hasattr(self, "machines")
-                    else None
-                )
-                topoff_time_min = (
-                    self.machines[machine_id].topoff_time_min
-                    if hasattr(self, "machines")
-                    else None
-                )
+                topoff_price = self.machines[machine_id].topoff_price if hasattr(self, "machines") else None
+                topoff_time_min = self.machines[machine_id].topoff_time_min if hasattr(self, "machines") else None
 
                 machines[machine_id] = LaundryMachine(
                     id_=machine["ReaderID"],
@@ -374,16 +349,14 @@ class Laundry:
                     busy=minutes_remaining > 0,
                     minutes_remaining=minutes_remaining,
                     base_price=machine.get("BasePrice"),
-                    online=bool(is_online)
-                    if (is_online := machine.get("IsOnline")) in [True, False]
-                    else None,
+                    online=bool(is_online) if (is_online := machine.get("IsOnline")) in [True, False] else None,
                     reader_serial=machine.get("SerialNumber"),
                     topoff_price=topoff_price,
                     topoff_time_min=topoff_time_min,
                 )
 
             except KeyError:
-                log.error("Failed to retrieve data for a machine: %s", machine)
+                log.exception("Failed to retrieve data for a machine: %s", machine)
 
         self.machines = machines
 
@@ -404,9 +377,7 @@ class Laundry:
             "Content-Type": "application/x-www-form-urlencoded",
         }
 
-        log.log(
-            LOG_LEVEL_TRACE, "==============[ BUILDING REQUEST BEGIN ]=============="
-        )
+        log.log(LOG_LEVEL_TRACE, "==============[ BUILDING REQUEST BEGIN ]==============")
         log.log(LOG_LEVEL_TRACE, "** REQUEST HEADERS **")
         log.log(LOG_LEVEL_TRACE, request_headers)
 
@@ -421,7 +392,6 @@ class Laundry:
             async with self._websession.post(
                 url=API_ENDPOINT_URL, data=request_body, headers=request_headers
             ) as resp:
-
                 # We can't use resp.json() because server returns JSON object in response with incorrect mimetype. This causes aiohttp to raise an aiohttp.client_exceptions.ContentTypeError exception.
                 raw_response = await resp.text()
         except (
@@ -429,7 +399,7 @@ class Laundry:
             aiohttp.ClientError,
             asyncio.exceptions.CancelledError,
         ) as err:
-            log.error("Failed to send request.")
+            log.exception("Failed to send request.")
 
             raise CommunicationError from err
 
@@ -470,10 +440,7 @@ class Laundry:
 
         if (
             not response_code
-            or (
-                (response_code := unpacked_content.get(RESULT_CODE_KEY))
-                == ServerResponseCodes.INVALID_REQUEST
-            )
+            or ((response_code := unpacked_content.get(RESULT_CODE_KEY)) == ServerResponseCodes.INVALID_REQUEST)
             or (response_code == ServerResponseCodes.INPUT_MALFORMED and no_retry)
         ):
             log.debug("UNPACKED RESPONSE CONTENT:\n%s\n\n", unpacked_content)
@@ -516,8 +483,6 @@ class Laundry:
             )
             raise UnexpectedError
 
-        log.log(
-            LOG_LEVEL_TRACE, "EXTRACTED RESPONSE CONTENT:\n%s\n\n", unpacked_content
-        )
+        log.log(LOG_LEVEL_TRACE, "EXTRACTED RESPONSE CONTENT:\n%s\n\n", unpacked_content)
 
         return unpacked_content

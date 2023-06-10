@@ -28,9 +28,7 @@ class MessagePacker:
         #     1. Base64 decode.
         #     2. gzip decompress.
 
-        log.log(
-            LOG_LEVEL_TRACE, "==============[ UNPACKING RESPONSE BEGIN ]=============="
-        )
+        log.log(LOG_LEVEL_TRACE, "==============[ UNPACKING RESPONSE BEGIN ]==============")
 
         decoded_as_bytes = base64.standard_b64decode(response_body)
 
@@ -42,20 +40,14 @@ class MessagePacker:
 
         gunzipped_as_bytes = gzip.decompress(decoded_as_bytes)
 
-        log.log(
-            LOG_LEVEL_TRACE, "gunzip Bytes -> Bytes:\n%s\n\n", decoded_as_bytes.hex()
-        )
+        log.log(LOG_LEVEL_TRACE, "gunzip Bytes -> Bytes:\n%s\n\n", decoded_as_bytes.hex())
 
-        try:
-            json_response = json.loads(str(gunzipped_as_bytes, "utf-8"))
-        except ValueError as err:
-            raise err
+        # Raises ValueError
+        json_response = json.loads(str(gunzipped_as_bytes, "utf-8"))
 
         log.log(LOG_LEVEL_TRACE, "UNPACKED RESPONSE:\n%s\n\n", json_response)
 
-        log.log(
-            LOG_LEVEL_TRACE, "==============[ UNPACKING RESPONSE END ]=============="
-        )
+        log.log(LOG_LEVEL_TRACE, "==============[ UNPACKING RESPONSE END ]==============")
 
         return json_response if isinstance(json_response, dict) else None
 
@@ -78,9 +70,7 @@ class MessagePacker:
         #     4. Base64 encode, again.
         #     5. URL encode.
 
-        log.log(
-            LOG_LEVEL_TRACE, "==============[ PACKING REQUEST BEGIN ]=============="
-        )
+        log.log(LOG_LEVEL_TRACE, "==============[ PACKING REQUEST BEGIN ]==============")
 
         log.log(LOG_LEVEL_TRACE, "Original Request Body:\n%s\n\n", request_body)
 
@@ -89,9 +79,7 @@ class MessagePacker:
 
         log.log(LOG_LEVEL_TRACE, "New Request ID: %s", new_request_id)
 
-        key = MessagePacker._generate_aes_key(
-            new_request_id=new_request_id, first_request_id=first_request_id
-        )
+        key = MessagePacker._generate_aes_key(new_request_id=new_request_id, first_request_id=first_request_id)
 
         # PKCS#7 Pad
         padded_request = MessagePacker._pkcs7_pad(bytes(str(request_body), "utf-8"))
@@ -101,9 +89,7 @@ class MessagePacker:
         # AES Encrypt
         cipher = Cipher(algorithms.AES(key), modes.CBC(AES_IV))
         encryptor = cipher.encryptor()
-        encrypted_request = (
-            encryptor.update(bytes(padded_request)) + encryptor.finalize()
-        )
+        encrypted_request = encryptor.update(bytes(padded_request)) + encryptor.finalize()
 
         log.log(
             LOG_LEVEL_TRACE,
@@ -112,9 +98,7 @@ class MessagePacker:
         )
 
         # 2x Base 64
-        b64_encoded_request = base64.urlsafe_b64encode(
-            base64.b64encode(encrypted_request)
-        )
+        b64_encoded_request = base64.urlsafe_b64encode(base64.b64encode(encrypted_request))
 
         log.log(LOG_LEVEL_TRACE, "Base64 Encoded Request:\n%s\n\n", b64_encoded_request)
 
@@ -137,9 +121,7 @@ class MessagePacker:
 
         # Packing Steps: Reverse of pack_client_request.
 
-        key = MessagePacker._generate_aes_key(
-            new_request_id=new_request_id, first_request_id=first_request_id
-        )
+        key = MessagePacker._generate_aes_key(new_request_id=new_request_id, first_request_id=first_request_id)
 
         # URL Decode
         url_decoded_request = urllib.parse.unquote(request_body)
@@ -191,16 +173,13 @@ class MessagePacker:
         return str(unpadded_request, "utf-8")
 
     @staticmethod
-    def _generate_aes_key(
-        new_request_id: str, first_request_id: str | None = None
-    ) -> bytes:
+    def _generate_aes_key(new_request_id: str, first_request_id: str | None = None) -> bytes:
         """Generate AES encryption key."""
 
         key_str = ""
         key_bytes = b""
 
         if not first_request_id:
-
             #
             # Generate key for authentication request. Authentication requests identified by missing first_request_id.
             #
@@ -216,7 +195,6 @@ class MessagePacker:
             key_bytes = bytes(key_str, "utf-8")
 
         else:
-
             # Generate key for all non-authentication requests by weaving together backwards last and second to last request IDs.
 
             new_req_id_length = len(str(new_request_id)) - 1
@@ -243,9 +221,7 @@ class MessagePacker:
     @staticmethod
     def _pkcs7_pad(message: bytes) -> bytes:
         """Add PKCS #7 padding to a string."""
-        return message + bytes(
-            chr(16 - len(message) % 16) * (16 - len(message) % 16), "utf-8"
-        )
+        return message + bytes(chr(16 - len(message) % 16) * (16 - len(message) % 16), "utf-8")
 
     @staticmethod
     def _pkcs7_unpad(message: bytes) -> bytes:
